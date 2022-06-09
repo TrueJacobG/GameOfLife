@@ -5,31 +5,50 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import static game.constant.Size.FIELD_SIZE;
+import static game.constant.Size.*;
 
 public class FieldButton extends JButton implements ActionListener {
-    private int x = 0;
-    private int y = 0;
-    private Color color = Color.WHITE;
+    private final boolean changeable;
+    private boolean alive = false;
 
     public FieldButton(int x, int y) {
-        this.x = x;
-        this.y = y;
-        this.setBackground(color);
+        this.changeable = !(x == 0 || y == 0 || x == ROWS - 1 || y == COLS - 1);
+
+        if (!changeable) {
+            this.setBackground(Color.GRAY);
+        } else {
+            this.setBackground(Color.WHITE);
+        }
+
         this.setPreferredSize(new Dimension(FIELD_SIZE, FIELD_SIZE));
         this.addActionListener(this);
     }
 
+    public void setLifeStatus(boolean status) {
+        if (!changeable) {
+            return;
+        }
+        alive = status;
+        repaintField();
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
+
+    private void repaintField() {
+        if (alive) {
+            this.setBackground(Color.BLACK);
+        } else {
+            this.setBackground(Color.WHITE);
+        }
+    }
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this) {
-            System.out.printf("x: %d y: %d \n", x, y);
-            if (color == Color.WHITE) {
-                color = Color.BLACK;
-            } else {
-                color = Color.WHITE;
-            }
-            this.setBackground(color);
+            setLifeStatus(!alive);
         }
     }
 }
