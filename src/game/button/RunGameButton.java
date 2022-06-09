@@ -8,31 +8,31 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class RunGameButton extends JButton implements ActionListener {
-    private String title = "Run Game";
-    private Color color = Color.GREEN;
-    private static GameThread gameThread = new GameThread();
+    private boolean isActive = false;
+    private static GameThread gameThread = null;
 
-    public RunGameButton(){
-        this.setText(title);
-        this.setBackground(color);
+    public RunGameButton() {
+        this.setText("Run Game");
+        this.setBackground(Color.GREEN);
         this.setFocusable(false);
         this.addActionListener(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == this){
-            if(title.equals("Run Game")){
-                title = "Stop";
-                color = Color.RED;
-                gameThread.start();
+        if (e.getSource() == this) {
+            if (isActive) {
+                isActive = false;
+                this.setText("Resume");
+                this.setBackground(Color.GREEN);
+                gameThread.stopThread();
             } else {
-                title = "Run Game";
-                color = Color.GREEN;
-                gameThread.running = false;
+                isActive = true;
+                this.setText("Stop");
+                this.setBackground(Color.RED);
+                gameThread = new GameThread();
+                gameThread.start();
             }
-            this.setText(title);
-            this.setBackground(color);
         }
     }
 }

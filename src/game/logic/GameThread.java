@@ -1,23 +1,34 @@
 package game.logic;
 
-import javax.swing.*;
+import game.button.FieldButton;
 
-import java.awt.*;
-
-import static game.Game.getButtons;
+import static game.Game.getFields;
 import static game.constant.Size.COLS;
 import static game.constant.Size.ROWS;
 
-public class GameThread extends Thread{
+public class GameThread extends Thread {
+    private volatile boolean running = true;
 
-    public boolean running = true;
+    public void run() {
+        FieldButton[][] buttons = getFields();
+        while (running) {
 
-    public void run(){
-        JButton[][] buttons = getButtons();
-        while(running){
-            for(int i = 0; i < ROWS; i++){
-                for(int j = 0; j < COLS; j++){
-                    buttons[i][j].setBackground(randomColor());
+            boolean[][] newLifeStatuses = new boolean[ROWS][COLS];
+
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    int numberOfNeighbours = getNumberOfNeighbours(buttons, i, j);
+                    if (buttons[i][j].isAlive()) {
+                        newLifeStatuses[i][j] = (numberOfNeighbours == 2 || numberOfNeighbours == 3);
+                    } else {
+                        newLifeStatuses[i][j] = numberOfNeighbours == 3;
+                    }
+                }
+            }
+
+            for (int i = 0; i < ROWS; i++) {
+                for (int j = 0; j < COLS; j++) {
+                    buttons[i][j].setLifeStatus(newLifeStatuses[i][j]);
                 }
             }
 
@@ -29,9 +40,29 @@ public class GameThread extends Thread{
         }
     }
 
-    private Color randomColor(){
-        Color[] colors = {Color.WHITE, Color.GREEN, Color.BLACK, Color.MAGENTA, Color.BLUE, Color.YELLOW, Color.CYAN};
-        int number = (int) ((Math.random() * (6)));
-        return colors[number];
+    private int getNumberOfNeighbours(FieldButton[][] buttons, int i, int j) {
+        int neighbours = 0;
+
+        if (!isValidCoords(i, j)) {
+            return 0;
+        }
+
+        for (int x = i - 1; x <= i + 1; x++) {
+            for (int y = j - 1; y <= j + 1; y++) {
+                if (buttons[x][y].isAlive() && !(x == i && y == j)) {
+                    neighbours++;
+                }
+            }
+        }
+
+        return neighbours;
+    }
+
+    private boolean isValidCoords(int i, int j) {
+        return !(i - 1 == -1 || j - 1 == -1 || i + 1 == ROWS || j + 1 == COLS);
+    }
+
+    public void stopThread() {
+        running = false;
     }
 }
